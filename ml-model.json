@@ -1,0 +1,13 @@
+{
+  "model":"Logistic regression screening model",
+  "version":"1.0",
+  "features":{
+    "sugar":1.25,
+    "sodium":1.05,
+    "gluten":1.35,
+    "potassium":0.85,
+    "phosphorus":0.85,
+    "ultra_processed":0.35
+  },
+  "intercept":-2.2
+}
