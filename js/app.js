@@ -14,6 +14,17 @@
     status.textContent = input.files?.length ? "Photo ready. Tap scan." : "";
   });
 
+  const healthForm = document.getElementById("healthForm");
+  const healthInputs = healthForm ? [...healthForm.querySelectorAll("input, select, textarea")] : [];
+  healthInputs.forEach(el => el.addEventListener("change", () => localStorage.setItem("legalLensHealthProfile", JSON.stringify(Object.fromEntries(new FormData(healthForm))))));
+
+  function getHealthProfile() {
+    if (!healthForm) return {};
+    const data = Object.fromEntries(new FormData(healthForm));
+    localStorage.setItem("legalLensHealthProfile", JSON.stringify(data));
+    return data;
+  }
+
   btn.addEventListener("click", async () => {
     const file = input.files?.[0];
     if (!file) return;
@@ -38,13 +49,15 @@
 
       const text = (ocr.data.text || "").trim();
       const confidence = Math.round(ocr.data.confidence || 0);
-      const analysis = await analyzeFood(text, disease.value);
+      const healthProfile = getHealthProfile();
+      const analysis = await analyzeFood(text, disease.value, healthProfile);
 
       lastReport = {
         product: extractProduct(text),
         ocr: text,
         confidence,
         disease: disease.value || "None",
+        healthProfile,
         analysis,
         createdAt: new Date().toISOString()
       };
@@ -60,7 +73,7 @@
     }
   });
 
-  async function analyzeFood(text, selectedDisease) {
+  async function analyzeFood(text, selectedDisease, healthProfile = {}) {
     let model = {
       intercept: -2.2,
       features: { sugar: 1.25, sodium: 1.05, gluten: 1.35, potassium: 0.85, phosphorus: 0.85, ultra_processed: 0.35 }
@@ -111,7 +124,9 @@
     if (selectedDisease === "kidney") probability += (features.sodium + features.potassium + features.phosphorus) * 15;
     probability = Math.min(100, probability);
 
-    const decision = probability >= 70 ? "Avoid for now" : probability >= 40 ? "Use caution" : "Generally okay";
+    const personal = personalizedCheck(features, extractNutrition(text), selectedDisease, healthProfile);
+    probability = Math.min(100, probability + personal.extraRisk);
+    const decision = personal.decision;
     const relevant = selectedDisease ? unique.filter(x => x.risk === selectedDisease) : unique;
 
     return {
@@ -129,11 +144,12 @@
         : probability >= 40
           ? "The label contains some signals worth checking before eating."
           : "No strong warning signal was detected by this prototype screening model.",
-      disclaimer: "Prototype screening only. It is not a diagnosis, medical prescription, or legal verdict."
+      personalReason: personal.reason,
+      disclaimer: "Screening support only. This does not diagnose disease or replace advice from a qualified clinician."
     };
   }
 
-  function extractProduct(text) {
+  function personalizedCheck(features, nutrition, selectedDisease, profile) {\n    let extraRisk = 0;\n    const reasons = [];\n    const condition = selectedDisease || profile.condition || "";\n    const sugarLimit = profile.sugar_limit === "yes" || condition === "diabetes" || condition === "sugar";\n    const lowSodium = profile.low_sodium === "yes" || condition === "hypertension";\n    if (sugarLimit && (features.sugar || (nutrition.sugars != null && nutrition.sugars > 10))) { extraRisk += 20; reasons.push("sugar may not fit the selected sugar/diabetes restriction"); }\n    if (lowSodium && (features.sodium || (nutrition.sodium != null && nutrition.sodium > 400))) { extraRisk += 20; reasons.push("sodium may not fit the selected low-sodium preference"); }\n    if (condition === "celiac" && features.gluten) { extraRisk += 35; reasons.push("gluten-related ingredients were detected"); }\n    if (condition === "kidney" && (features.potassium || features.phosphorus)) { extraRisk += 20; reasons.push("potassium/phosphorus signals were detected"); }\n    if (profile.allergy && new RegExp(profile.allergy.split(",").map(x => x.trim()).filter(Boolean).join("|"), "i").test(Object.keys(features).join(" "))) { extraRisk += 30; reasons.push("a possible allergy match needs manual label verification"); }\n    const score = Math.min(100, extraRisk + (condition ? 0 : 0));\n    const decision = extraRisk >= 50 ? "Avoid for now" : extraRisk >= 20 ? "Use caution" : "No specific concern detected";\n    return {extraRisk: score, decision, reason: reasons.length ? reasons.join("; ") + "." : "No selected health preference created a specific warning from the detected label data."};\n  }\n\n  function extractProduct(text) {
     const lines = text.split(/\n+/).map(x => x.trim()).filter(Boolean);
     const candidate = lines.find(x => x.length >= 3 && x.length <= 70 && !/^(ingredients|nutrition|energy|calories|net quantity|mrp|fssai)/i.test(x));
     return candidate || "Scanned food package";
