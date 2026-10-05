@@ -20,6 +20,10 @@
 <div class="health-grid">
 <div><label>Do you have a diagnosed disease/condition?</label><select id="hasDisease" required><option value="">Select</option><option value="yes">Yes</option><option value="no">No</option></select></div>
 <div><label>Food/Product Name</label><input id="foodName" placeholder="e.g. packaged snack" required></div>
+<div><label>Sugar (g/100g)</label><input id="sugar" type="number" min="0" step="0.1" placeholder="From label"></div>
+<div><label>Sodium (mg/100g)</label><input id="sodium" type="number" min="0" step="1" placeholder="From label"></div>
+<div><label>Saturated fat (g/100g)</label><input id="satFat" type="number" min="0" step="0.1" placeholder="From label"></div>
+<div><label>Calories (kcal/100g)</label><input id="calories" type="number" min="0" step="1" placeholder="From label"></div>
 </div>
 <div id="diseaseSection" style="display:none">
 <label><strong>Select diagnosed condition(s)</strong></label>
