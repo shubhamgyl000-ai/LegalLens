@@ -159,7 +159,7 @@
     };
   }
 
-  function personalizedCheck(features, nutrition, selectedDisease, profile) {\n    let extraRisk = 0;\n    const reasons = [];\n    const condition = selectedDisease || profile.condition || "";\n    const sugarLimit = profile.sugar_limit === "yes" || condition === "diabetes" || condition === "sugar";\n    const lowSodium = profile.low_sodium === "yes" || condition === "hypertension";\n    if (sugarLimit && (features.sugar || (nutrition.sugars != null && nutrition.sugars > 10))) { extraRisk += 20; reasons.push("sugar may not fit the selected sugar/diabetes restriction"); }\n    if (lowSodium && (features.sodium || (nutrition.sodium != null && nutrition.sodium > 400))) { extraRisk += 20; reasons.push("sodium may not fit the selected low-sodium preference"); }\n    if (condition === "celiac" && features.gluten) { extraRisk += 35; reasons.push("gluten-related ingredients were detected"); }\n    if (condition === "kidney" && (features.potassium || features.phosphorus)) { extraRisk += 20; reasons.push("potassium/phosphorus signals were detected"); }\n    if (profile.allergy && new RegExp(profile.allergy.split(",").map(x => x.trim()).filter(Boolean).join("|"), "i").test(Object.keys(features).join(" "))) { extraRisk += 30; reasons.push("a possible allergy match needs manual label verification"); }\n    const score = Math.min(100, extraRisk + (condition ? 0 : 0));\n    const decision = extraRisk >= 50 ? "Avoid for now" : extraRisk >= 20 ? "Use caution" : "No specific concern detected";\n    return {extraRisk: score, decision, reason: reasons.length ? reasons.join("; ") + "." : "No selected health preference created a specific warning from the detected label data."};\n  }\n\n  function extractProduct(text) {
+  function personalizedCheck(features, nutrition, selectedDisease, profile) {\n    let extraRisk = 0;\n    const reasons = [];\n    const condition = selectedDisease || profile.condition || "";\n    const sugarLimit = profile.sugar_limit === "yes" || condition === "diabetes" || condition === "sugar";\n    const lowSodium = profile.low_sodium === "yes" || condition === "hypertension";\n    if (sugarLimit && (features.sugar || (nutrition.sugars != null && nutrition.sugars > 10))) { extraRisk += 20; reasons.push("sugar may not fit the selected sugar/diabetes restriction"); }\n    if (lowSodium && (features.sodium || (nutrition.sodium != null && nutrition.sodium > 400))) { extraRisk += 20; reasons.push("sodium may not fit the selected low-sodium preference"); }\n    if (condition === "celiac" && features.gluten) { extraRisk += 35; reasons.push("gluten-related ingredients were detected"); }\n    if (condition === "kidney" && (features.potassium || features.phosphorus)) { extraRisk += 20; reasons.push("potassium/phosphorus signals were detected"); }\n    if (profile.allergy) { const allergyTerms = profile.allergy.split(",").map(x => x.trim()).filter(Boolean); if (allergyTerms.length && allergyTerms.some(x => new RegExp("\\b" + x.replace(/[.*+?^${}()|[\\]\\]/g, "\\if (profile.allergy && new RegExp(profile.allergy.split(",").map(x => x.trim()).filter(Boolean).join("|"), "i").test(Object.keys(features).join(" "))) { extraRisk += 30; reasons.push("a possible allergy match needs manual label verification"); }") + "\\b", "i").test(text))) { extraRisk += 30; reasons.push("a possible allergy match needs manual label verification"); } }\n    const score = Math.min(100, extraRisk);\n    const decision = extraRisk >= 50 ? "Avoid for now" : extraRisk >= 20 ? "Use caution" : "No specific concern detected";\n    return {extraRisk: score, decision, reason: reasons.length ? reasons.join("; ") + "." : "No selected health preference created a specific warning from the detected label data."};\n  }\n\n  function extractProduct(text) {
     const lines = text.split(/\n+/).map(x => x.trim()).filter(Boolean);
     const candidate = lines.find(x => x.length >= 3 && x.length <= 90 && !/^(photo|ingredients|nutrition|energy|calories|net quantity|mrp|fssai|batch|best before|expiry)/i.test(x) && !/^\d+[\s.,]*$/.test(x));
     return candidate || "Scanned food package";
@@ -182,7 +182,14 @@
       sugars: get([/sugars?[^\d]*(\d+(?:\.\d+)?)\s*g/i]),
       protein: get([/protein[^\d]*(\d+(?:\.\d+)?)\s*g/i]),
       sodium: get([/sodium[^\d]*(\d+(?:\.\d+)?)\s*mg/i]),
-      salt: get([/salt[^\d]*(\d+(?:\.\d+)?)\s*g/i])
+      salt: get([/salt[^\d]*(\d+(?:\.\d+)?)\s*g/i]),
+      fiber: get([/dietary\s*fiber[^\d]*(\d+(?:\.\d+)?)\s*g/i, /fiber[^\d]*(\d+(?:\.\d+)?)\s*g/i]),
+      transFat: get([/trans\s*fat[^\d]*(\d+(?:\.\d+)?)\s*g/i]),
+      cholesterol: get([/cholesterol[^\d]*(\d+(?:\.\d+)?)\s*mg/i]),
+      potassium: get([/potassium[^\d]*(\d+(?:\.\d+)?)\s*mg/i]),
+      phosphorus: get([/phosphorus[^\d]*(\d+(?:\.\d+)?)\s*mg/i]),
+      calcium: get([/calcium[^\d]*(\d+(?:\.\d+)?)\s*mg/i]),
+      iron: get([/iron[^\d]*(\d+(?:\.\d+)?)\s*mg/i])
     };
   }
 
@@ -236,6 +243,14 @@
         ${nutritionMetric("Sugars", n.sugars, "g")}
         ${nutritionMetric("Protein", n.protein, "g")}
         ${nutritionMetric("Sodium", n.sodium, "mg")}
+        ${nutritionMetric("Salt", n.salt, "g")}
+        ${nutritionMetric("Fiber", n.fiber, "g")}
+        ${nutritionMetric("Trans fat", n.transFat, "g")}
+        ${nutritionMetric("Cholesterol", n.cholesterol, "mg")}
+        ${nutritionMetric("Potassium", n.potassium, "mg")}
+        ${nutritionMetric("Phosphorus", n.phosphorus, "mg")}
+        ${nutritionMetric("Calcium", n.calcium, "mg")}
+        ${nutritionMetric("Iron", n.iron, "mg")}
       </div>
 
       <h2 class="section-title">Ingredients & warnings</h2>
@@ -299,6 +314,7 @@
       ["Sugars", n.sugars ?? ""],
       ["Protein", n.protein ?? ""],
       ["Sodium", n.sodium ?? ""],
+      ["Salt", n.salt ?? ""], ["Fiber", n.fiber ?? ""], ["Trans fat", n.transFat ?? ""], ["Cholesterol", n.cholesterol ?? ""], ["Potassium", n.potassium ?? ""], ["Phosphorus", n.phosphorus ?? ""], ["Calcium", n.calcium ?? ""], ["Iron", n.iron ?? ""],
       ["Allergens", a.allergens.join("; ")],
       ["Additives", a.additives.join("; ")]
     ];
@@ -339,6 +355,14 @@
       "Sugars: " + (n.sugars ?? "—") + " g",
       "Protein: " + (n.protein ?? "—") + " g",
       "Sodium: " + (n.sodium ?? "—") + " mg",
+      "Salt: " + (n.salt ?? "—") + " g",
+      "Fiber: " + (n.fiber ?? "—") + " g",
+      "Trans fat: " + (n.transFat ?? "—") + " g",
+      "Cholesterol: " + (n.cholesterol ?? "—") + " mg",
+      "Potassium: " + (n.potassium ?? "—") + " mg",
+      "Phosphorus: " + (n.phosphorus ?? "—") + " mg",
+      "Calcium: " + (n.calcium ?? "—") + " mg",
+      "Iron: " + (n.iron ?? "—") + " mg",
       "",
       "Warnings: " + (a.allFlags.map(x => x.ingredient).join(", ") || "None detected"),
       "Allergens: " + (a.allergens.join(", ") || "None detected"),
