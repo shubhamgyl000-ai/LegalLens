@@ -12,10 +12,23 @@
       if(!window.Tesseract)throw Error("OCR library could not load. Refresh and try again.");
       const o=await Tesseract.recognize(file,"eng",{logger:m=>{if(m.status==="recognizing text"&&typeof m.progress==="number")status.textContent="Reading label… "+Math.round(m.progress*100)+"%";}});
       const text=(o.data.text||"").trim(), p=profile(), a=analyze(text,p), type=reportType?.value||"food";
-      const report={product:product(text),ocr:text,confidence:Math.round(Number(o.data.confidence||0)),disease:p.condition||"None",healthProfile:p,analysis:a,reportType:type,createdAt:new Date().toISOString()};
+      const remote=await enrichFromOpenFoodFacts(text);
+      const report={product:remote?.product_name||product(text),remoteSource:remote?.source||"OCR only",remoteProduct:remote||null,ocr:text,confidence:Math.round(Number(o.data.confidence||0)),disease:p.condition||"None",healthProfile:p,analysis:a,reportType:type,createdAt:new Date().toISOString()};
       localStorage.setItem("legalLensScan",JSON.stringify(report));render(report,file);status.textContent="Done — complete product report generated. PDF is ready.";setTimeout(()=>document.getElementById("pdf")?.click(),250);
     }catch(e){console.error(e);status.textContent="Scan failed: "+e.message;}finally{btn.disabled=false;}
   };
+
+  async function enrichFromOpenFoodFacts(text){
+    const barcode=(text.match(/\\b(?:EAN|GTIN|UPC)?\\s*[:#-]?\\s*(\\d{8}|\\d{12,14})\\b/i)||[])[1];
+    const name=product(text);
+    if(!barcode && (!name || name==="Unknown product")) return null;
+    try{
+      const url=barcode?`https://world.openfoodfacts.org/api/v2/product/${barcode}.json?fields=code,product_name,brands,ingredients_text,nutriments,nutrition_grades,categories,allergens`:`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(name)}&search_simple=1&action=process&json=1&page_size=1`;
+      const res=await fetch(url); if(!res.ok)return null; const data=await res.json();
+      const p=barcode?(data.status===1?data.product:null):(data.products?.[0]||null); if(!p)return null;
+      return {source:"Open Food Facts",product_name:p.product_name||name,brands:p.brands||"",ingredients_text:p.ingredients_text||"",nutriments:p.nutriments||{},nutrition_grades:p.nutrition_grades||"",categories:p.categories||"",allergens:p.allergens||"",code:p.code||barcode};
+    }catch(_){return null;}
+  }
   function analyze(text,p){
     const t=text.toLowerCase(),n=nutrition(text),condition=p.condition||"",flags=[];
     const rules={diabetes:["sugar","glucose","sucrose","maltose","fructose"],hypertension:["sodium","salt"],kidney:["sodium","potassium","phosphorus"],celiac:["wheat","barley","rye","malt","gluten"],sugar:["sugar","glucose","sucrose","maltose","fructose"]};
