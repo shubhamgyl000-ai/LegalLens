@@ -1,0 +1,33 @@
+name: LegalLens ML Pipeline Test
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "ml/**"
+      - "data/clinical_training.csv"
+      - ".github/workflows/ml-test.yml"
+  pull_request:
+    paths:
+      - "ml/**"
+      - "data/clinical_training.csv"
+
+jobs:
+  ml-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install ML dependencies
+        run: python -m pip install -r ml/requirements.txt
+      - name: Compile Python pipeline
+        run: python -m py_compile ml/train.py ml/evaluate.py ml/predict.py
+      - name: Run synthetic pipeline test
+        run: python ml/train.py --demo-synthetic
+      - name: Verify artifacts
+        run: |
+          test -f ml/artifacts/legal_lens_calibrated.joblib
+          test -f ml/artifacts/metrics.json
+          test -f ml/artifacts/model_metadata.json
