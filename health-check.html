@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>LegalLens | Health Check</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+.health-page{max-width:900px;margin:50px auto;padding:25px}.health-card{background:#fff;padding:30px;border-radius:18px;box-shadow:0 10px 35px rgba(0,0,0,.08)}.health-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;margin:25px 0}.health-grid label{display:block;font-weight:600;margin-bottom:8px}.health-grid input,.health-grid select{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px}.disease-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}.disease-list label{padding:12px;border:1px solid #ddd;border-radius:10px;cursor:pointer}.note{font-size:14px;line-height:1.6;color:#555;background:#f7f7f7;padding:15px;border-radius:10px}
+</style>
+</head>
+<body>
+<nav class="navbar"><div class="logo">⚖️ Legal<span>Lens</span></div><div class="nav-links"><a href="scan.html">Back to Scan</a></div></nav>
+<section class="health-page">
+<div class="health-card">
+<div class="badge">HEALTH & FOOD SCREENING</div>
+<h1>Before Your Food Report</h1>
+<p>Tell us whether you have a diagnosed condition so the report can show general food-safety flags for the scanned product.</p>
+<form id="healthForm">
+<div class="health-grid">
+<div><label>Do you have a diagnosed disease/condition?</label><select id="hasDisease" required><option value="">Select</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+<div><label>Food/Product Name</label><input id="foodName" placeholder="e.g. packaged snack" required></div>
+</div>
+<div id="diseaseSection" style="display:none">
+<label><strong>Select diagnosed condition(s)</strong></label>
+<div class="disease-list">
+<label><input type="checkbox" value="diabetes"> Diabetes</label>
+<label><input type="checkbox" value="hypertension"> High blood pressure</label>
+<label><input type="checkbox" value="heart"> Heart disease</label>
+<label><input type="checkbox" value="kidney"> Kidney disease</label>
+<label><input type="checkbox" value="other"> Other / not listed</label>
+</div>
+</div>
+<br>
+<div class="note">This is an educational screening feature, not a diagnosis or medical prescription. For a diagnosed condition, use your doctor's or dietitian's advice, especially for kidney, heart, pregnancy, allergy, or medication-related dietary restrictions.</div>
+<br>
+<button class="primary-btn" type="submit">Generate Health Report</button>
+</form>
+</div>
+</section>
+<script src="js/health.js"></script>
+</body>
+</html>
