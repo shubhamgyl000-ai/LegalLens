@@ -37,7 +37,12 @@
 </div>
 
 <div class="lens-modes"><span class="active">Food</span><span>Ingredients</span><span>Nutrition</span></div>
-<p class="lens-tip">Center the ingredients or nutrition panel inside the box.</p>
+<p class="lens-tip">Choose one report type after selecting your photo or camera.</p>
+<div class="report-choice">
+  <button type="button" class="report-option active-report" data-report="food">🍽️ Food report<small>Complete food, nutrition & health</small></button>
+  <button type="button" class="report-option" data-report="ingredients">🧪 Ingredients report<small>Ingredients, additives & allergens</small></button>
+</div>
+<input type="hidden" id="reportType" value="food">
 
 <section class="health-profile"><div class="profile-head"><span>❤️</span><div><h2>Tell LegalLens about you</h2><p>These answers personalize the food screening.</p></div></div><form id="healthForm"><label class="field">Health condition<select name="condition"><option value="">None / not selected</option><option value="diabetes">Diabetes</option><option value="hypertension">High blood pressure</option><option value="kidney">Kidney condition</option><option value="celiac">Gluten sensitivity / celiac disease</option><option value="sugar">Need to limit sugar</option></select></label><div class="profile-grid"><label class="check"><input type="checkbox" name="sugar_limit" value="yes"> I need low sugar</label><label class="check"><input type="checkbox" name="low_sodium" value="yes"> I need low sodium</label></div><label class="field">Known food allergies <input name="allergy" type="text" placeholder="e.g. milk, peanut, soy"></label></form></section>
 <button id="scanBtn" disabled>Scan & see food details</button>
