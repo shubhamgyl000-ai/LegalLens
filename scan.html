@@ -19,6 +19,7 @@
 <h1>Scan a food label</h1>
 <p>Take a clear photo of the ingredients or nutrition panel. LegalLens reads it in your browser and turns it into simple food details.</p>
 
+<div class="camera-actions"><button type="button" id="openCamera" class="camera-button">🎥 Open webcam</button><span>or</span></div>
 <label class="upload">
 <input id="image" type="file" accept="image/*" capture="environment">
 <b>📷 Scan food package</b>
@@ -39,6 +40,7 @@
 <button id="scanBtn" disabled>Scan & see food details</button>
 <div id="status" class="status"></div>
 <p class="privacy-note">🔒 Your selected image is processed in your browser for this GitHub Pages demo. It is not uploaded to the LegalLens server.</p>
+<div id="cameraModal" class="camera-modal hidden"><div class="camera-panel"><div class="camera-head"><b>Scan with webcam</b><button type="button" id="closeCamera" class="camera-close">×</button></div><video id="cameraVideo" autoplay playsinline muted></video><button type="button" id="captureCamera" class="capture-button">📸 Capture food label</button></div></div>
 </section>
 
 <section id="result" class="card hidden"></section>
@@ -47,5 +49,6 @@
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="js/app.js"></script>
+<script src="js/webcam.js"></script>
 </body>
 </html>
