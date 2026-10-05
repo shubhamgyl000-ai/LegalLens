@@ -1,0 +1,1 @@
+record_id,subject_id,food_id,condition,sugars_g_per_100g,sodium_mg_per_100g,sat_fat_g_per_100g,fiber_g_per_100g,protein_g_per_100g,potassium_mg_per_100g,phosphorus_mg_per_100g,gluten_signal,ocr_uncertainty,serving_size_g,label
