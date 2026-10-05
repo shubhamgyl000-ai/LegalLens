@@ -125,6 +125,6 @@ function verifyProduct() {
         JSON.stringify(result)
     );
 
-    window.location.href = "report.html";
+    window.location.href = "health-check.html";
 
 }
