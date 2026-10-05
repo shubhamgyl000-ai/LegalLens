@@ -16,22 +16,33 @@
 
 <section class="card scanner google-camera-shell">
 <h1>Scan a food label</h1>
-<p>Point your camera at a food package. LegalLens will read the label and explain the food in simple language.</p>
+<p>Choose one method: upload a photo or scan directly with your camera.</p>
 
+<div class="scan-choice">
+  <button type="button" id="uploadChoice" class="choice-card active-choice">📁<strong>Upload photo</strong><small>Choose a food-package image</small></button>
+  <button type="button" id="cameraChoice" class="choice-card">📷<strong>Use camera</strong><small>Scan the package live</small></button>
+</div>
+
+<div id="uploadPanel" class="scan-method-panel">
+<label class="upload">
+<input id="image" type="file" accept="image/*">
+<b>📁 Choose food package photo</b>
+<small>One photo only</small>
+</label>
+</div>
+
+<div id="cameraPanel" class="scan-method-panel hidden">
 <div class="lens-viewfinder" id="lensViewfinder"><video id="cameraVideo" autoplay playsinline muted></video><div class="viewfinder-overlay"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><div class="scan-target"></div></div></div>
 <div class="lens-camera-bar"><button type="button" id="openCamera" class="lens-secondary">🎥 Start camera</button><button type="button" id="captureCamera" class="lens-capture" aria-label="Capture food package"></button><button type="button" id="closeCamera" class="lens-secondary">✕ Stop</button></div>
+</div>
+
 <div class="lens-modes"><span class="active">Food</span><span>Ingredients</span><span>Nutrition</span></div>
 <p class="lens-tip">Center the ingredients or nutrition panel inside the box.</p>
-<label class="upload">
-<input id="image" type="file" accept="image/*" capture="environment">
-<b>📷 Scan food package</b>
-<small>Camera or photo from your device</small>
-</label>
 
 <section class="health-profile"><div class="profile-head"><span>❤️</span><div><h2>Tell LegalLens about you</h2><p>These answers personalize the food screening.</p></div></div><form id="healthForm"><label class="field">Health condition<select name="condition"><option value="">None / not selected</option><option value="diabetes">Diabetes</option><option value="hypertension">High blood pressure</option><option value="kidney">Kidney condition</option><option value="celiac">Gluten sensitivity / celiac disease</option><option value="sugar">Need to limit sugar</option></select></label><div class="profile-grid"><label class="check"><input type="checkbox" name="sugar_limit" value="yes"> I need low sugar</label><label class="check"><input type="checkbox" name="low_sodium" value="yes"> I need low sodium</label></div><label class="field">Known food allergies <input name="allergy" type="text" placeholder="e.g. milk, peanut, soy"></label></form></section>
 <button id="scanBtn" disabled>Scan & see food details</button>
 <div id="status" class="status"></div>
-<p class="privacy-note">🔒 Your selected image is processed in your browser for this GitHub Pages demo. It is not uploaded to the LegalLens server.</p>
+<p class="privacy-note">🔒 Your selected image is processed in your browser for this GitHub Pages demo.</p>
 </section>
 
 <section id="result" class="card hidden"></section>
@@ -39,6 +50,13 @@
 
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script>
+(() => {
+ const upload=document.getElementById("uploadChoice"), camera=document.getElementById("cameraChoice"), up=document.getElementById("uploadPanel"), cp=document.getElementById("cameraPanel");
+ upload.onclick=()=>{upload.classList.add("active-choice");camera.classList.remove("active-choice");up.classList.remove("hidden");cp.classList.add("hidden");};
+ camera.onclick=()=>{camera.classList.add("active-choice");upload.classList.remove("active-choice");up.classList.add("hidden");cp.classList.remove("hidden");};
+})();
+</script>
 <script src="js/app.js"></script>
 <script src="js/webcam.js"></script>
 <script src="js/package-details.js"></script>
