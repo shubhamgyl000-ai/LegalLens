@@ -1,0 +1,30 @@
+{
+    "project": "LegalLens",
+    "version": "2026.1",
+    "description": "Versioned prototype rule dataset for packaged commodity compliance screening.",
+    "disclaimer": "Rules in this prototype are for demonstration and must be validated against the current official rules before production use.",
+    "checks": [
+        {
+            "id": "MRP",
+            "name": "MRP Declaration",
+            "required": true
+        },
+        {
+            "id": "NET_QUANTITY",
+            "name": "Net Quantity",
+            "required": true
+        },
+        {
+            "id": "MANUFACTURER",
+            "name": "Manufacturer / Packer / Importer",
+            "required": true
+        },
+        {
+            "id": "USP",
+            "name": "Unit Sale Price",
+            "required": true,
+            "calculation": "MRP / normalized_quantity",
+            "rounding": 2
+        }
+    ]
+}
