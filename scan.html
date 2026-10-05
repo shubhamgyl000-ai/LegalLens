@@ -14,12 +14,15 @@
 <span class="pill">FOOD DETAILS SCANNER</span>
 </header>
 
-<section class="card scanner">
-<div class="camera-icon">⌕</div>
+<section class="card scanner google-camera-shell">
+<div class="camera-searchbar"><span class="lens-mark">◎</span><span class="search-copy">Search with LegalLens Camera</span><span class="voice-mark">🎙</span></div>
 <h1>Scan a food label</h1>
-<p>Take a clear photo of the ingredients or nutrition panel. LegalLens reads it in your browser and turns it into simple food details.</p>
+<p>Point your camera at a food package. LegalLens will find the label, read the text, and explain the food in simple language.</p>
 
-<div class="camera-actions"><button type="button" id="openCamera" class="camera-button">🎥 Open webcam</button><span>or</span></div>
+<div class="lens-viewfinder" id="lensViewfinder"><video id="cameraVideo" autoplay playsinline muted></video><div class="viewfinder-overlay"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><div class="scan-target"></div></div></div>
+<div class="lens-camera-bar"><button type="button" id="openCamera" class="lens-secondary">🎥 Start camera</button><button type="button" id="captureCamera" class="lens-capture" aria-label="Capture food package"></button><button type="button" id="closeCamera" class="lens-secondary">✕ Stop</button></div>
+<div class="lens-modes"><span class="active">Food</span><span>Ingredients</span><span>Nutrition</span></div>
+<p class="lens-tip">Center the ingredients or nutrition panel inside the box.</p>
 <label class="upload">
 <input id="image" type="file" accept="image/*" capture="environment">
 <b>📷 Scan food package</b>
@@ -40,7 +43,6 @@
 <button id="scanBtn" disabled>Scan & see food details</button>
 <div id="status" class="status"></div>
 <p class="privacy-note">🔒 Your selected image is processed in your browser for this GitHub Pages demo. It is not uploaded to the LegalLens server.</p>
-<div id="cameraModal" class="camera-modal hidden"><div class="camera-panel"><div class="camera-head"><b>Scan with webcam</b><button type="button" id="closeCamera" class="camera-close">×</button></div><video id="cameraVideo" autoplay playsinline muted></video><button type="button" id="captureCamera" class="capture-button">📸 Capture food label</button></div></div>
 </section>
 
 <section id="result" class="card hidden"></section>
