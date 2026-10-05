@@ -1,6 +1,5 @@
 (() => {
   const openBtn = document.getElementById("openCamera");
-  const modal = document.getElementById("cameraModal");
   const video = document.getElementById("cameraVideo");
   const captureBtn = document.getElementById("captureCamera");
   const closeBtn = document.getElementById("closeCamera");
