@@ -26,8 +26,8 @@
   }
 
   btn.addEventListener("click", async () => {
-    const file = input.files?.[0];
-    if (!file) return;
+    const files = [...(input.files || [])];
+    if (!files.length) return;
 
     btn.disabled = true;
     result.classList.add("hidden");
@@ -39,22 +39,32 @@
       }
 
       status.textContent = "Reading the food label with OCR…";
-      const ocr = await Tesseract.recognize(file, "eng", {
+      const ocrTexts = [];
+      let confidenceTotal = 0;
+      for (let fileIndex = 0; fileIndex < files.length; fileIndex++) {
+        const file = files[fileIndex];
+        status.textContent = `Reading photo ${fileIndex + 1} of ${files.length}…`;
+        const ocr = await Tesseract.recognize(file, "eng", {
         logger: m => {
           if (m.status === "recognizing text" && typeof m.progress === "number") {
             status.textContent = "Reading label… " + Math.round(m.progress * 100) + "%";
           }
         }
-      });
+        });
+        ocrTexts.push(`PHOTO ${fileIndex + 1}\n${(ocr.data.text || "").trim()}`);
+        confidenceTotal += Number(ocr.data.confidence || 0);
+      }
 
-      const text = (ocr.data.text || "").trim();
-      const confidence = Math.round(ocr.data.confidence || 0);
+      const text = ocrTexts.join("\n\n").trim();
+      const confidence = Math.round(confidenceTotal / files.length);
       const healthProfile = getHealthProfile();
       const analysis = await analyzeFood(text, disease.value, healthProfile);
 
       lastReport = {
         product: extractProduct(text),
         ocr: text,
+        imageCount: files.length,
+        imageNames: files.map(f => f.name),
         confidence,
         disease: disease.value || "None",
         healthProfile,
@@ -193,7 +203,7 @@
     result.classList.remove("hidden");
     result.innerHTML = `
       <div class="product-card">
-        <div class="product-image">🥫</div>
+        <div class="product-image" id="overviewImages"></div>
         <div>
           <p class="muted">PRODUCT DETECTED</p>
           <h2 class="product-name"></h2>
@@ -201,7 +211,7 @@
         </div>
       </div>
 
-      <h2 class="section-title">Food overview</h2>
+      <p class="muted overview-note">This overview combines the readable text and nutrition information from ${report.imageCount || 1} selected package photo${(report.imageCount || 1) === 1 ? "" : "s"}.</p>\n      <h2 class="section-title">Food overview</h2>
       <div class="resultGrid">
         <div class="metric"><span>LegalLens score</span><b>${a.riskScore}/100</b></div>
         <div class="metric"><span>Personal check</span><b>${escapeHtml(a.decision)}</b></div>
@@ -255,6 +265,10 @@
     `;
 
     result.querySelector(".product-name").textContent = report.product;
+    const overviewImages = result.querySelector("#overviewImages");
+    if (overviewImages && input.files?.length) {
+      [...input.files].forEach(file => { const img=document.createElement("img"); img.src=URL.createObjectURL(file); img.alt="Scanned food package"; overviewImages.appendChild(img); });
+    }
     result.querySelector("pre").textContent = report.ocr || "No text detected.";
 
     result.querySelector("#pdf").onclick = () => downloadPDF(report);
