@@ -79,5 +79,38 @@
     "subgroup fairness",
     "clinical review"
   ],
-  "clinical_claim_policy": "Do not claim clinical accuracy until an independent clinical validation study demonstrates performance for the intended population and use."
+  "clinical_claim_policy": "Do not claim clinical accuracy until an independent clinical validation study demonstrates performance for the intended population and use.",
+  "product_classifier": {
+    "model_name": "LegalLens Product Quality & Market Classification",
+    "version": "0.1.0-research",
+    "status": "rule_derived_prototype_not_validated",
+    "note": "Health class uses nutrition/ingredient signals. Market class estimates branded-label vs local-label evidence from package declarations. Authenticity/originality is not inferred from OCR alone.",
+    "health_classes": [
+      "healthier_signal",
+      "less_healthy_signal",
+      "insufficient_data"
+    ],
+    "market_classes": [
+      "branded_label_signal",
+      "local_label_signal",
+      "insufficient_evidence"
+    ],
+    "features": [
+      "sugar",
+      "sodium",
+      "saturated_fat",
+      "fiber",
+      "protein",
+      "additives",
+      "label_declaration_count",
+      "fssai_present",
+      "manufacturer_present",
+      "mrp_present"
+    ],
+    "thresholds": {
+      "health_probability": 0.65,
+      "market_probability": 0.65
+    },
+    "authenticity_policy": "Only an authoritative government/brand/source verification can establish authenticity; OCR cannot prove an original product."
+  }
 }
