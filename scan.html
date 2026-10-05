@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>LegalLens | Scan Product</title>
+
+<link rel="stylesheet" href="css/style.css">
+
+</head>
+
+<body>
+
+<nav class="navbar">
+
+    <div class="logo">
+        ⚖️ Legal<span>Lens</span>
+    </div>
+
+    <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="index.html#features">Features</a>
+        <a href="scan.html" class="nav-btn">Scan Product</a>
+    </div>
+
+</nav>
+
+<section class="scanner-page">
+
+    <div class="scanner-header">
+
+        <div class="badge">LEGAL COMPLIANCE SCANNER</div>
+
+        <h1>Scan a Product</h1>
+
+        <p>
+            Upload a product label image to start the
+            LegalLens compliance workflow.
+        </p>
+
+    </div>
+
+    <div class="scanner-container">
+
+        <div class="upload-box" id="uploadBox">
+
+            <div class="upload-icon">📷</div>
+
+            <h2>Upload Product Label</h2>
+
+            <p>
+                JPG, PNG or WEBP
+            </p>
+
+            <input
+                type="file"
+                id="imageInput"
+                accept="image/*"
+                hidden
+            >
+
+            <button
+                class="primary-btn"
+                onclick="document.getElementById('imageInput').click()"
+            >
+                Choose Image
+            </button>
+
+        </div>
+
+        <div class="preview-box" id="previewBox">
+
+            <img id="previewImage" alt="Product preview">
+
+        </div>
+
+    </div>
+
+    <div class="demo-form">
+
+        <h2>Demo Product Data</h2>
+
+        <p>
+            Use this form to demonstrate the verification
+            engine without an OCR backend.
+        </p>
+
+        <div class="form-grid">
+
+            <div>
+                <label>Product Name</label>
+                <input id="productName" value="Sample Packaged Food">
+            </div>
+
+            <div>
+                <label>MRP (₹)</label>
+                <input id="mrp" type="number" value="100">
+            </div>
+
+            <div>
+                <label>Net Quantity</label>
+                <input id="quantity" type="number" value="500">
+            </div>
+
+            <div>
+                <label>Unit</label>
+                <select id="unit">
+                    <option value="g">g</option>
+                    <option value="kg">kg</option>
+                    <option value="ml">ml</option>
+                    <option value="l">l</option>
+                </select>
+            </div>
+
+            <div>
+                <label>Printed USP (₹)</label>
+                <input id="printedUSP" type="number" value="0.20">
+            </div>
+
+            <div>
+                <label>Manufacturer</label>
+                <input id="manufacturer" value="Demo Manufacturer">
+            </div>
+
+        </div>
+
+        <button class="primary-btn verify-btn" onclick="verifyProduct()">
+            🔍 Verify Product
+        </button>
+
+    </div>
+
+</section>
+
+<script src="js/scanner.js"></script>
+
+</body>
+</html>
