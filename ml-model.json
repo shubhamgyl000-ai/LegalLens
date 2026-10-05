@@ -1,13 +1,83 @@
 {
-  "model":"Logistic regression screening model",
-  "version":"1.0",
-  "features":{
-    "sugar":1.25,
-    "sodium":1.05,
-    "gluten":1.35,
-    "potassium":0.85,
-    "phosphorus":0.85,
-    "ultra_processed":0.35
+  "model_name": "LegalLens Clinical Nutrition Screening Model",
+  "version": "0.1.0-research",
+  "status": "research_prototype_not_clinically_validated",
+  "intended_use": "Risk stratification of packaged-food nutrition and ingredient signals for clinician-reviewed dietary decision support.",
+  "not_for": "Diagnosis, treatment decisions, emergency decisions, medication changes, or definitive safe/unsafe food determinations.",
+  "method": "Interpretable logistic regression with calibrated probability, missing-data handling, and abstention.",
+  "required_inputs": [
+    "nutrition_per_100g",
+    "ingredients",
+    "selected_condition",
+    "serving_size"
+  ],
+  "conditions": [
+    "diabetes",
+    "hypertension",
+    "kidney",
+    "celiac",
+    "sugar_restriction"
+  ],
+  "features": {
+    "sugars_g_per_100g": {
+      "weight": 0.55,
+      "direction": "risk"
+    },
+    "sodium_mg_per_100g": {
+      "weight": 0.35,
+      "direction": "risk"
+    },
+    "sat_fat_g_per_100g": {
+      "weight": 0.2,
+      "direction": "risk"
+    },
+    "fiber_g_per_100g": {
+      "weight": -0.18,
+      "direction": "protective"
+    },
+    "protein_g_per_100g": {
+      "weight": -0.08,
+      "direction": "protective"
+    },
+    "gluten_signal": {
+      "weight": 0.9,
+      "direction": "risk"
+    },
+    "potassium_mg_per_100g": {
+      "weight": 0.18,
+      "direction": "risk_for_kidney"
+    },
+    "phosphorus_mg_per_100g": {
+      "weight": 0.18,
+      "direction": "risk_for_kidney"
+    },
+    "missing_nutrition": {
+      "weight": 0.25,
+      "direction": "uncertainty"
+    }
   },
-  "intercept":-2.2
+  "calibration": {
+    "type": "platt_scaling",
+    "a": 1,
+    "b": 0,
+    "requires_validation": true
+  },
+  "abstain": {
+    "minimum_input_completeness": 0.65,
+    "maximum_allowed_ocr_uncertainty": 0.35
+  },
+  "validation_required": [
+    "patient-level train-validation-test split",
+    "external validation",
+    "calibration curve",
+    "AUROC",
+    "AUPRC",
+    "sensitivity",
+    "specificity",
+    "PPV",
+    "NPV",
+    "subgroup fairness",
+    "clinical review"
+  ],
+  "clinical_claim_policy": "Do not claim clinical accuracy until an independent clinical validation study demonstrates performance for the intended population and use."
 }
