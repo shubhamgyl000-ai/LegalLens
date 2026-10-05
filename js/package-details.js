@@ -27,7 +27,11 @@
     return {ingredients: ingredients || "Not clearly read", company: company || "Not clearly read", brand: brand || "Not clearly read", quantity: quantity || "Not clearly read", mrp: mrp || "Not clearly read", fssai: fssai || "Not clearly read", batch: batch || "Not clearly read", expiry: expiry || "Not clearly read", packageType, material, lines};
   }
 
+  let rendering = false;
+
   function renderPackage(report) {
+    if (rendering) return;
+    rendering = true;
     const old = result.querySelector(".package-details");
     if (old) old.remove();
     const d = details(report.ocr || "");
@@ -52,6 +56,7 @@
       if (el) el.textContent = Array.isArray(value) ? value.join("\n") : value;
     });
     result.prepend(section);
+    rendering = false;
   }
 
   const observer = new MutationObserver(() => {
