@@ -2,9 +2,11 @@ from pathlib import Path
 import tempfile
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from vision.scan_food_label import scan_image
 
-app=FastAPI(title="LegalLens Vision API",version="2.0.0")
+app=FastAPI(title="LegalLens Vision API",version="2.1.0")
+app.add_middleware(CORSMiddleware,allow_origins=["*"],allow_credentials=False,allow_methods=["*"],allow_headers=["*"])
 
 @app.get("/health")
 def health():
@@ -20,7 +22,8 @@ async def scan(file: UploadFile=File(...)):
     with tempfile.NamedTemporaryFile(suffix=suffix,delete=False) as tmp:
         tmp.write(data); path=Path(tmp.name)
     try:
-        return JSONResponse(scan_image(path))
+        result=scan_image(path)
+        return JSONResponse(result)
     except Exception as exc:
         raise HTTPException(500,f"Scan failed: {exc}")
     finally:
