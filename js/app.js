@@ -58,7 +58,8 @@
       const text = ocrTexts.join("\n\n").trim();
       const confidence = Math.round(confidenceTotal / files.length);
       const healthProfile = getHealthProfile();
-      const analysis = await analyzeFood(text, disease.value, healthProfile);
+      const selectedCondition = healthProfile.condition || "";
+      const analysis = await analyzeFood(text, selectedCondition, healthProfile);
 
       lastReport = {
         product: extractProduct(text),
@@ -66,7 +67,7 @@
         imageCount: files.length,
         imageNames: files.map(f => f.name),
         confidence,
-        disease: disease.value || "None",
+        disease: selectedCondition || "None",
         healthProfile,
         analysis,
         createdAt: new Date().toISOString()
