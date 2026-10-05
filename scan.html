@@ -1,9 +1,51 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LegalLens — Food Scanner</title><link rel="stylesheet" href="css/style.css"></head>
-<body><main class="shell">
-<header><a class="brand" href="index.html">⚖ Legal<span>Lens</span></a><span class="pill">FOOD DETAILS SCANNER</span></header>
-<section class="card scanner"><div class="camera-icon">⌕</div><h1>Scan a food label</h1><p>Point your camera at the package or upload a clear photo. LegalLens reads the label and turns it into easy-to-understand food details.</p>
-<label class="upload"><input id="image" type="file" accept="image/*" capture="environment"><b>📷 Scan food package</b><small>Camera or photo from your device</small></label>
-<label class="field">For a more personal check<select id="disease"><option value="">No health condition selected</option><option value="diabetes">Diabetes</option><option value="hypertension">High blood pressure</option><option value="kidney">Kidney condition</option><option value="celiac">Gluten sensitivity / celiac disease</option><option value="sugar">I need to limit sugar</option></select></label>
-<button id="scanBtn" disabled>Scan & see food details</button><div id="status" class="status"></div></section>
-<section id="result" class="card hidden"></section></main><script src="js/app.js"></script></body></html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="LegalLens food package scanner with OCR and health screening.">
+<title>LegalLens — Food Details Scanner</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main class="shell">
+<header>
+<a class="brand" href="index.html">⚖ Legal<span>Lens</span></a>
+<span class="pill">FOOD DETAILS SCANNER</span>
+</header>
+
+<section class="card scanner">
+<div class="camera-icon">⌕</div>
+<h1>Scan a food label</h1>
+<p>Take a clear photo of the ingredients or nutrition panel. LegalLens reads it in your browser and turns it into simple food details.</p>
+
+<label class="upload">
+<input id="image" type="file" accept="image/*" capture="environment">
+<b>📷 Scan food package</b>
+<small>Camera or photo from your device</small>
+</label>
+
+<label class="field">For a more personal check
+<select id="disease">
+<option value="">No health condition selected</option>
+<option value="diabetes">Diabetes</option>
+<option value="hypertension">High blood pressure</option>
+<option value="kidney">Kidney condition</option>
+<option value="celiac">Gluten sensitivity / celiac disease</option>
+<option value="sugar">I need to limit sugar</option>
+</select>
+</label>
+
+<button id="scanBtn" disabled>Scan & see food details</button>
+<div id="status" class="status"></div>
+<p class="privacy-note">🔒 Your selected image is processed in your browser for this GitHub Pages demo. It is not uploaded to the LegalLens server.</p>
+</section>
+
+<section id="result" class="card hidden"></section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
