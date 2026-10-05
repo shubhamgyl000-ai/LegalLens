@@ -343,3 +343,28 @@ pre{
   .upload{min-height:180px}
   .resultGrid{grid-template-columns:1fr 1fr}
 }
+
+/* LegalLens landing page */
+.navbar{width:min(1180px,100%);margin:auto;padding:20px 24px;display:flex;justify-content:space-between;align-items:center;gap:20px}
+.logo{font-size:24px;font-weight:800}.logo span{font-weight:500}
+.nav-links{display:flex;align-items:center;gap:20px}.nav-links a{text-decoration:none;color:#3c4043;font-weight:600}
+.nav-btn,.primary-btn{display:inline-block;padding:12px 18px;border-radius:999px;background:#1a73e8!important;color:#fff!important;text-decoration:none;border:0}
+.hero{width:min(1180px,100%);margin:30px auto;padding:50px 24px;display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center}
+.badge{display:inline-block;padding:8px 12px;border-radius:999px;background:#eef3ff;color:#1557b0;font-size:12px;font-weight:800;letter-spacing:.5px}
+.hero h1{font-size:clamp(42px,7vw,72px);line-height:1.02;letter-spacing:-3px;margin:18px 0}
+.hero h1 span{display:block;color:#1a73e8}.hero p{font-size:18px;color:#5f6368;max-width:650px}
+.hero-buttons{display:flex;gap:12px;margin:26px 0}.secondary-btn{display:inline-block;padding:12px 18px;border-radius:999px;border:1px solid #dadce0;text-decoration:none;color:#202124;background:#fff}
+.notice{color:#6b7075;font-size:13px}.hero-card{min-height:350px;border:1px solid #e0e3e7;border-radius:32px;background:#fff;box-shadow:var(--shadow);display:grid;place-items:center}
+.scanner-animation{text-align:center}.product-icon{font-size:100px}.scan-text{font-weight:800;color:#1a73e8;letter-spacing:2px}
+.stats{width:min(1100px,100%);margin:10px auto 70px;padding:0 24px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stats div{padding:22px;background:#fff;border:1px solid #e0e3e7;border-radius:18px;text-align:center}.stats strong,.stats span{display:block}.stats strong{font-size:22px}.stats span{color:#6b7075;font-size:13px}
+.section,.workflow{width:min(1100px,100%);margin:70px auto;padding:0 24px}.section-title span{font-size:12px;font-weight:800;color:#1a73e8}.section-title h2{font-size:34px;margin:8px 0 25px;letter-spacing:-1px}
+.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.feature-card{background:#fff;border:1px solid #e0e3e7;border-radius:22px;padding:24px}.feature-card .icon{font-size:30px}.feature-card p,.step p{color:#6b7075}
+.steps{display:flex;align-items:center;justify-content:space-between;gap:14px}.step{flex:1;padding:20px;border:1px solid #e0e3e7;border-radius:20px;background:#fff}.number{font-size:12px;color:#1a73e8;font-weight:800}.arrow{font-size:25px;color:#9aa0a6}
+footer{margin-top:80px;padding:40px 24px;text-align:center;border-top:1px solid #e0e3e7;color:#6b7075}
+.privacy-note{font-size:12px!important;margin-top:18px!important;color:#777!important}
+.action-row{display:flex;gap:10px;flex-wrap:wrap}.secondary-report{background:#fff!important;color:#202124!important;border:1px solid #dadce0!important}
+.ocr-details{margin-top:20px}.ocr-details summary{cursor:pointer;font-weight:700;padding:10px 0}
+.report-page{width:min(1100px,100%);margin:40px auto;padding:24px}.report-header{display:flex;justify-content:space-between;gap:20px;align-items:center}.report-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.report-card{background:#fff;border:1px solid #e0e3e7;border-radius:22px;padding:24px;margin:18px 0}.data-row,.check-item{display:flex;justify-content:space-between;gap:15px;padding:13px 0;border-bottom:1px solid #eee}.status-badge{padding:10px 16px;border-radius:999px;background:#fff8e8;font-weight:800}.status-pass{background:#eef7ee;color:#188038}.status-fail{background:#fff4f2;color:#d93025}.check-pass{color:#188038}.check-fail{color:#d93025}
+@media(max-width:800px){.hero{grid-template-columns:1fr;padding-top:20px}.stats{grid-template-columns:repeat(2,1fr)}.feature-grid{grid-template-columns:1fr 1fr}.steps{flex-direction:column}.arrow{transform:rotate(90deg)}.nav-links a:not(.nav-btn){display:none}.report-grid{grid-template-columns:1fr}}
+@media(max-width:520px){.navbar{padding:15px}.hero,.section,.workflow{padding:0 15px}.hero-buttons{flex-direction:column}.hero-buttons a{text-align:center}.feature-grid{grid-template-columns:1fr}.stats{padding:0 15px}.stats{margin-bottom:45px}.product-card{grid-template-columns:1fr}}
