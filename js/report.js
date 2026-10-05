@@ -88,3 +88,20 @@ if (!report) {
 
 }
 
+
+const food=JSON.parse(localStorage.getItem("legalLensFoodReport")||"null");
+if(food){
+ const card=document.getElementById("foodReportCard"), box=document.getElementById("foodReport");
+ card.style.display="block";
+ box.innerHTML="<p><b>Nutrition:</b> Sugar "+food.nutrition.sugar+" g, Sodium "+food.nutrition.sodium+" mg, Saturated fat "+food.nutrition.satFat+" g, Calories "+food.nutrition.calories+" kcal per 100g.</p>";
+ (food.predictions||[]).forEach(p=>{box.innerHTML+="<div class='check-item'><span>"+p.condition+" — ML confidence "+p.probability+"%</span><strong>"+p.suggestion+"</strong></div>"});
+ box.innerHTML+="<p class='note'>"+food.disclaimer+"</p>";
+}
+function downloadHealthCSV(){
+ const h=JSON.parse(localStorage.getItem("legalLensHealth")||"null"), r=JSON.parse(localStorage.getItem("legalLensFoodReport")||"null");
+ if(!h||!r)return;
+ const rows=[["Date","Food","Condition","Sugar_g_100g","Sodium_mg_100g","SatFat_g_100g","Calories_kcal_100g","ML_Risk_Percent","ML_Suggestion"]];
+ (r.predictions||[]).forEach(p=>rows.push([h.date,h.foodName,p.condition,h.sugar,h.sodium,h.satFat,h.calories,p.probability,p.suggestion]));
+ const csv=rows.map(x=>x.map(v=>'"\'+String(v).replaceAll('"','""')+'\"').join(",")).join("\n");
+ const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="LegalLens_Health_Food_Report.csv";a.click();
+}
