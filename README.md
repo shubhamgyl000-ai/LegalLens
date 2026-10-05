@@ -2,35 +2,52 @@
 
 ## Smart India Hackathon 2026
 
-LegalLens is an AI-assisted packaged-food and commodity compliance screening prototype.
+LegalLens is an AI-assisted packaged-food scanning and screening prototype.
 
-It combines:
-- Product image capture
-- OCR
-- Ingredient/nutrition extraction
-- Rule-based compliance screening
-- Clinical-nutrition ML research pipeline
-- Evidence reporting
-- Human review
+### End-to-end food scan
 
-## Food health ML pipeline
+**Single photo → OCR → product/ingredient/nutrition extraction → health screening → complete report → automatic PDF download**
 
-The repository now contains a research-grade pipeline architecture, not a claim of clinical validation.
+The GitHub Pages scanner uses Tesseract.js in the browser. The optional Python API provides a YOLO11 + PaddleOCR vision pipeline and can be deployed separately.
 
-Workflow:
+### Current scanner features
+
+- Single food-package photo/camera capture
+- OCR label reading
+- Product and nutrition extraction
+- Ingredient, allergen and additive detection
+- Personal health-profile inputs
+- Research ML screening architecture with abstention/review concept
+- Government/Legal Metrology declaration checks
+- Complete PDF report generated after a successful scan
+- CSV export for structured results
+- Browser-local scan storage
+
+### ML pipeline
 
 SCAN → OCR → FEATURE EXTRACTION → ML RISK SCREEN → ABSTAIN/REVIEW → REPORT
 
-### ML files
+The repository contains a research-grade pipeline architecture, not a claim of clinical validation.
+
+#### ML files
 
 - `ml/train.py` — grouped train/calibration/test training pipeline
-- `ml/evaluate.py` — locked-test AUROC/AUPRC/Brier/sensitivity/specificity/PPV/NPV
+- `ml/evaluate.py` — locked-test evaluation metrics
 - `ml/predict.py` — local probability inference with abstention
-- `ml/dataset_schema.csv` — required research-data schema
-- `ml/MODEL_CARD.md` — model purpose, limitations, and validation requirements
-- `ml/requirements.txt` — Python dependencies
-- `ml/artifacts/` — generated model artifacts
-- `data/clinical_training.csv` — entry point for approved research data
+- `ml/dataset_schema.csv` — research-data schema
+- `ml/MODEL_CARD.md` — model purpose and limitations
+- `ml/train_product_classifier.py` — product-quality/market-label research classifier training scaffold
+- `ml-model.json` — model metadata and validation policy
+
+### Vision API
+
+`api/main.py` exposes `POST /api/v2/scan` for image analysis and `GET /health` for service health. CORS is enabled so a separately deployed frontend can call the API.
+
+The custom YOLO label classes require fine-tuned weights; the default pretrained YOLO11 model does not automatically recognize LegalLens food-label classes.
+
+### Search limitation
+
+Live product web search is intentionally **not simulated or falsely claimed** in the browser demo. A deployed backend can connect an approved search/product-data API, then merge product evidence with OCR and nutrition data before report generation. Direct Google-result scraping is not part of this repository.
 
 ### Training
 
@@ -49,48 +66,6 @@ For approved research data:
 python ml/train.py --data data/clinical_training.csv
 ```
 
-The training code keeps records from the same `subject_id` in the same split and uses a separate calibration split.
+### Disclaimer
 
-Evaluate a locked test set:
-
-```bash
-python ml/evaluate.py --data data/clinical_test.csv
-```
-
-Run a prediction:
-
-```bash
-python ml/predict.py --input '{"sugars_g_per_100g":10,"sodium_mg_per_100g":250,"sat_fat_g_per_100g":3,"fiber_g_per_100g":4,"protein_g_per_100g":6,"potassium_mg_per_100g":200,"phosphorus_mg_per_100g":100,"gluten_signal":0,"ocr_uncertainty":0.1,"serving_size_g":30,"condition":"diabetes"}'
-```
-
-### Automated test
-
-`.github/workflows/ml-test.yml` installs dependencies, compiles the Python files, runs the synthetic pipeline test, and verifies generated artifacts on relevant pushes/PRs.
-
-## Compliance workflow
-
-SCAN → OCR → VERIFY → REPORT
-
-The intended production architecture can connect:
-
-Frontend
-↓
-API
-↓
-YOLO/PaddleOCR
-↓
-Ingredient + nutrition extraction
-↓
-Rule engine + ML screening
-↓
-PostgreSQL/Object Storage
-↓
-Evidence/health report
-
-## Disclaimer
-
-LegalLens is an AI-assisted screening and research system.
-
-The clinical-nutrition model is **not clinically validated** and does not provide a diagnosis, treatment decision, emergency decision, medication change, or definitive safe/unsafe food determination. Results should be reviewed by an appropriately qualified professional in research or decision-support use.
-
-Low-confidence or potentially non-compliant commodity results should be reviewed by an authorized human officer.
+LegalLens is an AI-assisted screening and research system. The clinical-nutrition model is **not clinically validated** and does not provide a diagnosis, treatment decision, emergency decision, medication change, or definitive safe/unsafe food determination. Results should be reviewed by an appropriately qualified professional in research or decision-support use.
