@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>LegalLens | Compliance Report</title>
+
+<link rel="stylesheet" href="css/style.css">
+
+</head>
+
+<body>
+
+<nav class="navbar">
+
+    <div class="logo">
+        ⚖️ Legal<span>Lens</span>
+    </div>
+
+    <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="scan.html" class="nav-btn">New Scan</a>
+    </div>
+
+</nav>
+
+<section class="report-page">
+
+    <div class="report-header">
+
+        <div>
+            <div class="badge">LEGAL LENS REPORT</div>
+
+            <h1 id="reportProduct">
+                Compliance Report
+            </h1>
+
+            <p id="reportTime"></p>
+        </div>
+
+        <div id="overallStatus" class="status-badge">
+            REVIEW
+        </div>
+
+    </div>
+
+    <div class="report-grid">
+
+        <div class="report-card">
+
+            <h2>📋 Extracted Declarations</h2>
+
+            <div class="data-row">
+                <span>Product</span>
+                <strong id="rProduct">-</strong>
+            </div>
+
+            <div class="data-row">
+                <span>MRP</span>
+                <strong id="rMRP">-</strong>
+            </div>
+
+            <div class="data-row">
+                <span>Net Quantity</span>
+                <strong id="rQuantity">-</strong>
+            </div>
+
+            <div class="data-row">
+                <span>Manufacturer</span>
+                <strong id="rManufacturer">-</strong>
+            </div>
+
+        </div>
+
+        <div class="report-card">
+
+            <h2>🧮 USP Verification</h2>
+
+            <div class="usp-result">
+
+                <div>
+                    <span>Expected USP</span>
+                    <strong id="expectedUSP">₹0.00</strong>
+                </div>
+
+                <div>
+                    <span>Printed USP</span>
+                    <strong id="printedUSPReport">₹0.00</strong>
+                </div>
+
+            </div>
+
+            <div id="uspMessage" class="check-message">
+                Waiting for result...
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="report-card">
+
+        <h2>⚙️ Compliance Checks</h2>
+
+        <div id="checks"></div>
+
+    </div>
+
+    <div class="report-card evidence">
+
+        <h2>🔐 Evidence & Review</h2>
+
+        <p>
+            LegalLens is an AI-assisted screening system.
+            The result should be treated as evidence for
+            human review and not as a legal verdict.
+        </p>
+
+        <button onclick="window.print()" class="secondary-btn">
+            🖨️ Print Report
+        </button>
+
+    </div>
+
+</section>
+
+<script src="js/report.js"></script>
+
+</body>
+</html>
