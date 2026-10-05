@@ -1,0 +1,9 @@
+{
+  "model": "logistic_regression_demo",
+  "version": "1.0",
+  "features": ["sugar_g_per_100g", "sodium_mg_per_100g", "saturated_fat_g_per_100g", "calories_per_100g", "diabetes", "hypertension", "heart", "kidney"],
+  "weights": [0.0859967688, 0.00490165553, 0.0374757939, 0.000253144534, -0.610305595, -0.365738108, 2.23192211, -1.25523027],
+  "bias": -2.8466286277,
+  "threshold": 0.5,
+  "note": "Prototype demonstration model. It is not clinically validated and must not be used for diagnosis or treatment."
+}
