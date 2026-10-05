@@ -2,116 +2,95 @@
 
 ## Smart India Hackathon 2026
 
-LegalLens is an AI-assisted packaged commodity compliance
-screening prototype.
+LegalLens is an AI-assisted packaged-food and commodity compliance screening prototype.
 
 It combines:
-
 - Product image capture
 - OCR
-- Declaration detection
-- Rule engine
-- USP verification
+- Ingredient/nutrition extraction
+- Rule-based compliance screening
+- Clinical-nutrition ML research pipeline
 - Evidence reporting
 - Human review
 
-## Workflow
+## Food health ML pipeline
 
-SCAN
-↓
-OCR
-↓
-VERIFY
-↓
-REPORT
+The repository now contains a research-grade pipeline architecture, not a claim of clinical validation.
 
-## Features
+Workflow:
 
-### 1. Smart Capture
+SCAN → OCR → FEATURE EXTRACTION → ML RISK SCREEN → ABSTAIN/REVIEW → REPORT
 
-Users can upload a packaged product label.
+### ML files
 
-### 2. OCR
+- `ml/train.py` — grouped train/calibration/test training pipeline
+- `ml/evaluate.py` — locked-test AUROC/AUPRC/Brier/sensitivity/specificity/PPV/NPV
+- `ml/predict.py` — local probability inference with abstention
+- `ml/dataset_schema.csv` — required research-data schema
+- `ml/MODEL_CARD.md` — model purpose, limitations, and validation requirements
+- `ml/requirements.txt` — Python dependencies
+- `ml/artifacts/` — generated model artifacts
+- `data/clinical_training.csv` — entry point for approved research data
 
-The intended production architecture uses:
+### Training
 
-YOLO + PaddleOCR
+For software-pipeline testing only:
 
-to detect declaration regions and extract text.
+```bash
+python -m pip install -r ml/requirements.txt
+python ml/train.py --demo-synthetic
+```
 
-### 3. Rule Engine
+Synthetic data are **not clinical evidence** and must not be reported as model accuracy.
 
-Extracted declarations are evaluated against
-versioned compliance rules.
+For approved research data:
 
-### 4. USP Verification
+```bash
+python ml/train.py --data data/clinical_training.csv
+```
 
-Prototype calculation:
+The training code keeps records from the same `subject_id` in the same split and uses a separate calibration split.
 
-Expected USP = MRP / normalized quantity
+Evaluate a locked test set:
 
-The result is rounded to two decimal places.
+```bash
+python ml/evaluate.py --data data/clinical_test.csv
+```
 
-### 5. Evidence Report
+Run a prediction:
 
-The report displays:
+```bash
+python ml/predict.py --input '{"sugars_g_per_100g":10,"sodium_mg_per_100g":250,"sat_fat_g_per_100g":3,"fiber_g_per_100g":4,"protein_g_per_100g":6,"potassium_mg_per_100g":200,"phosphorus_mg_per_100g":100,"gluten_signal":0,"ocr_uncertainty":0.1,"serving_size_g":30,"condition":"diabetes"}'
+```
 
-- Product
-- MRP
-- Net quantity
-- Manufacturer
-- Expected USP
-- Printed USP
-- Compliance checks
+### Automated test
 
-## Important
+`.github/workflows/ml-test.yml` installs dependencies, compiles the Python files, runs the synthetic pipeline test, and verifies generated artifacts on relevant pushes/PRs.
 
-This repository contains a frontend demonstration.
+## Compliance workflow
 
-The current browser prototype uses manually entered
-demo data for the verification engine.
+SCAN → OCR → VERIFY → REPORT
 
-A production version should connect:
+The intended production architecture can connect:
 
 Frontend
 ↓
 API
 ↓
-YOLO
+YOLO/PaddleOCR
 ↓
-PaddleOCR
+Ingredient + nutrition extraction
 ↓
-Rule Engine
+Rule engine + ML screening
 ↓
 PostgreSQL/Object Storage
 ↓
-Evidence Report
-
-## Suggested Stack
-
-Frontend:
-React PWA
-
-Backend:
-FastAPI
-
-Computer Vision:
-YOLO
-
-OCR:
-PaddleOCR
-
-Database:
-PostgreSQL
-
-Storage:
-Object Storage
+Evidence/health report
 
 ## Disclaimer
 
-LegalLens is an AI-assisted screening system.
+LegalLens is an AI-assisted screening and research system.
 
-It does NOT provide a final legal verdict.
+The clinical-nutrition model is **not clinically validated** and does not provide a diagnosis, treatment decision, emergency decision, medication change, or definitive safe/unsafe food determination. Results should be reviewed by an appropriately qualified professional in research or decision-support use.
 
-Low-confidence or potentially non-compliant results
-should be reviewed by an authorized human officer.
+Low-confidence or potentially non-compliant commodity results should be reviewed by an authorized human officer.
