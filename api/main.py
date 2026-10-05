@@ -10,7 +10,7 @@ app.add_middleware(CORSMiddleware,allow_origins=["*"],allow_credentials=False,al
 
 @app.get("/health")
 def health():
-    return {"status":"ok","service":"LegalLens Vision API","version":"2.0.0","pipeline":"YOLO11 + PaddleOCR"}
+    return {"status":"ok","service":"LegalLens Vision API","version":"2.1.0","pipeline":"YOLO11 + PaddleOCR full-image OCR"}
 
 @app.post("/api/v2/scan")
 async def scan(file: UploadFile=File(...)):
