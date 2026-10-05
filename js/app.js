@@ -161,7 +161,7 @@
 
   function personalizedCheck(features, nutrition, selectedDisease, profile) {\n    let extraRisk = 0;\n    const reasons = [];\n    const condition = selectedDisease || profile.condition || "";\n    const sugarLimit = profile.sugar_limit === "yes" || condition === "diabetes" || condition === "sugar";\n    const lowSodium = profile.low_sodium === "yes" || condition === "hypertension";\n    if (sugarLimit && (features.sugar || (nutrition.sugars != null && nutrition.sugars > 10))) { extraRisk += 20; reasons.push("sugar may not fit the selected sugar/diabetes restriction"); }\n    if (lowSodium && (features.sodium || (nutrition.sodium != null && nutrition.sodium > 400))) { extraRisk += 20; reasons.push("sodium may not fit the selected low-sodium preference"); }\n    if (condition === "celiac" && features.gluten) { extraRisk += 35; reasons.push("gluten-related ingredients were detected"); }\n    if (condition === "kidney" && (features.potassium || features.phosphorus)) { extraRisk += 20; reasons.push("potassium/phosphorus signals were detected"); }\n    if (profile.allergy && new RegExp(profile.allergy.split(",").map(x => x.trim()).filter(Boolean).join("|"), "i").test(Object.keys(features).join(" "))) { extraRisk += 30; reasons.push("a possible allergy match needs manual label verification"); }\n    const score = Math.min(100, extraRisk + (condition ? 0 : 0));\n    const decision = extraRisk >= 50 ? "Avoid for now" : extraRisk >= 20 ? "Use caution" : "No specific concern detected";\n    return {extraRisk: score, decision, reason: reasons.length ? reasons.join("; ") + "." : "No selected health preference created a specific warning from the detected label data."};\n  }\n\n  function extractProduct(text) {
     const lines = text.split(/\n+/).map(x => x.trim()).filter(Boolean);
-    const candidate = lines.find(x => x.length >= 3 && x.length <= 70 && !/^(ingredients|nutrition|energy|calories|net quantity|mrp|fssai)/i.test(x));
+    const candidate = lines.find(x => x.length >= 3 && x.length <= 90 && !/^(photo|ingredients|nutrition|energy|calories|net quantity|mrp|fssai|batch|best before|expiry)/i.test(x) && !/^\d+[\s.,]*$/.test(x));
     return candidate || "Scanned food package";
   }
 
@@ -203,7 +203,7 @@
     result.classList.remove("hidden");
     result.innerHTML = `
       <div class="product-card">
-        <div class="product-image" id="overviewImages"></div>
+        <div class="product-image" id="overviewImages"><span class="overview-placeholder">📦</span></div>
         <div>
           <p class="muted">PRODUCT DETECTED</p>
           <h2 class="product-name"></h2>
@@ -211,7 +211,9 @@
         </div>
       </div>
 
-      <p class="muted overview-note">This overview combines the readable text and nutrition information from ${report.imageCount || 1} selected package photo${(report.imageCount || 1) === 1 ? "" : "s"}.</p>\n      <h2 class="section-title">Food overview</h2>
+      <p class="muted overview-note">This overview combines the readable text and nutrition information from ${report.imageCount || 1} selected package photo${(report.imageCount || 1) === 1 ? "" : "s"}.</p>
+      <h3 class="section-title">What was written on the package</h3>
+      <div class="package-text-summary"><pre>${escapeHtml(report.ocr || "No readable package text detected.")}</pre></div>\n      <h2 class="section-title">Food overview</h2>
       <div class="resultGrid">
         <div class="metric"><span>LegalLens score</span><b>${a.riskScore}/100</b></div>
         <div class="metric"><span>Personal check</span><b>${escapeHtml(a.decision)}</b></div>
@@ -267,7 +269,7 @@
     result.querySelector(".product-name").textContent = report.product;
     const overviewImages = result.querySelector("#overviewImages");
     if (overviewImages && input.files?.length) {
-      [...input.files].forEach(file => { const img=document.createElement("img"); img.src=URL.createObjectURL(file); img.alt="Scanned food package"; overviewImages.appendChild(img); });
+      overviewImages.innerHTML = ""; [...input.files].forEach(file => { const img=document.createElement("img"); img.src=URL.createObjectURL(file); img.alt="Scanned food package"; overviewImages.appendChild(img); });
     }
     result.querySelector("pre").textContent = report.ocr || "No text detected.";
 
