@@ -2,7 +2,7 @@
   const input=document.getElementById("image"), btn=document.getElementById("scanBtn"), status=document.getElementById("status"), result=document.getElementById("result");
   if(!input||!btn||!result)return;
   input.multiple=false;
-  input.onchange=()=>{btn.disabled=!input.files?.length;status.textContent=input.files?.length?"Photo ready. Tap scan.":"";};
+  input.onchange=()=>{if(!input.files?.length){btn.disabled=true;status.textContent="";return;} btn.disabled=false; status.textContent="Photo selected — extracting information automatically…"; setTimeout(()=>btn.click(),50);};
   const form=document.getElementById("healthForm"), reportType=document.getElementById("reportType");
   function profile(){return form?Object.fromEntries(new FormData(form)):{};}
   btn.onclick=async()=>{
