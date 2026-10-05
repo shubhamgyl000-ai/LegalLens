@@ -5,7 +5,7 @@
   const captureBtn = document.getElementById("captureCamera");
   const closeBtn = document.getElementById("closeCamera");
   const fileInput = document.getElementById("image");
-  if (!openBtn || !modal || !video || !captureBtn || !closeBtn || !fileInput) return;
+  if (!openBtn || !video || !captureBtn || !closeBtn || !fileInput) return;
 
   let stream = null;
 
@@ -26,7 +26,7 @@
         audio: false
       });
       video.srcObject = stream;
-      modal.classList.remove("hidden");
+      document.body.classList.add("camera-live");
     } catch (error) {
       console.error(error);
       alert("Camera permission was denied or the camera is unavailable.");
@@ -47,7 +47,7 @@
       fileInput.files = transfer.files;
       fileInput.dispatchEvent(new Event("change", { bubbles: true }));
       stopCamera();
-      modal.classList.add("hidden");
+      document.body.classList.remove("camera-live");
     }, "image/jpeg", 0.92);
   });
 
