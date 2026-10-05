@@ -368,3 +368,12 @@ footer{margin-top:80px;padding:40px 24px;text-align:center;border-top:1px solid 
 .report-page{width:min(1100px,100%);margin:40px auto;padding:24px}.report-header{display:flex;justify-content:space-between;gap:20px;align-items:center}.report-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.report-card{background:#fff;border:1px solid #e0e3e7;border-radius:22px;padding:24px;margin:18px 0}.data-row,.check-item{display:flex;justify-content:space-between;gap:15px;padding:13px 0;border-bottom:1px solid #eee}.status-badge{padding:10px 16px;border-radius:999px;background:#fff8e8;font-weight:800}.status-pass{background:#eef7ee;color:#188038}.status-fail{background:#fff4f2;color:#d93025}.check-pass{color:#188038}.check-fail{color:#d93025}
 @media(max-width:800px){.hero{grid-template-columns:1fr;padding-top:20px}.stats{grid-template-columns:repeat(2,1fr)}.feature-grid{grid-template-columns:1fr 1fr}.steps{flex-direction:column}.arrow{transform:rotate(90deg)}.nav-links a:not(.nav-btn){display:none}.report-grid{grid-template-columns:1fr}}
 @media(max-width:520px){.navbar{padding:15px}.hero,.section,.workflow{padding:0 15px}.hero-buttons{flex-direction:column}.hero-buttons a{text-align:center}.feature-grid{grid-template-columns:1fr}.stats{padding:0 15px}.stats{margin-bottom:45px}.product-card{grid-template-columns:1fr}}
+
+.camera-actions{display:flex;align-items:center;justify-content:center;gap:12px;margin:22px 0 8px;color:var(--muted)}
+.camera-button{width:auto!important;padding:12px 20px!important;background:#202124!important;color:#fff!important}
+.camera-modal{position:fixed;inset:0;background:rgba(32,33,36,.72);z-index:1000;display:grid;place-items:center;padding:18px}
+.camera-panel{width:min(720px,100%);background:#fff;border-radius:24px;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.camera-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:18px}
+.camera-close{border:0;background:#f1f3f4;border-radius:50%;width:38px;height:38px;font-size:24px;cursor:pointer}
+#cameraVideo{width:100%;display:block;aspect-ratio:16/9;object-fit:cover;border-radius:18px;background:#111}
+.capture-button{width:100%;margin-top:14px;padding:14px;border:0;border-radius:999px;background:var(--blue);color:#fff;font-weight:750;cursor:pointer}
