@@ -1,99 +1,40 @@
 (() => {
-  const input = document.getElementById("image");
-  const btn = document.getElementById("scanBtn");
-  const status = document.getElementById("status");
-  const result = document.getElementById("result");
-  if (!input || !btn || !result) return;
-
-  let lastReport = null;
-  input.multiple = false;
-  input.addEventListener("change", () => {
-    btn.disabled = !input.files?.length;
-    status.textContent = input.files?.length ? "Photo ready. Tap scan." : "";
-  });
-
-  const healthForm = document.getElementById("healthForm");
-  function getHealthProfile() {
-    if (!healthForm) return {};
-    const data = Object.fromEntries(new FormData(healthForm));
-    localStorage.setItem("legalLensHealthProfile", JSON.stringify(data));
-    return data;
+  const input=document.getElementById("image"), btn=document.getElementById("scanBtn"), status=document.getElementById("status"), result=document.getElementById("result");
+  if(!input||!btn||!result)return;
+  input.multiple=false;
+  input.onchange=()=>{btn.disabled=!input.files?.length;status.textContent=input.files?.length?"Photo ready. Tap scan.":"";};
+  const form=document.getElementById("healthForm");
+  function profile(){return form?Object.fromEntries(new FormData(form)):{};}
+  btn.onclick=async()=>{
+    const file=input.files?.[0];if(!file)return;
+    btn.disabled=true;result.classList.add("hidden");status.textContent="Reading food label…";
+    try{
+      if(!window.Tesseract)throw Error("OCR library could not load. Refresh and try again.");
+      const o=await Tesseract.recognize(file,"eng",{logger:m=>{if(m.status==="recognizing text"&&typeof m.progress==="number")status.textContent="Reading label… "+Math.round(m.progress*100)+"%";}});
+      const text=(o.data.text||"").trim(), p=profile(), a=analyze(text,p);
+      const report={product:product(text),ocr:text,confidence:Math.round(Number(o.data.confidence||0)),disease:p.condition||"None",healthProfile:p,analysis:a,createdAt:new Date().toISOString()};
+      localStorage.setItem("legalLensScan",JSON.stringify(report));render(report,file);status.textContent="Done — complete product report generated.";
+    }catch(e){console.error(e);status.textContent="Scan failed: "+e.message;}finally{btn.disabled=false;}
+  };
+  function analyze(text,p){
+    const t=text.toLowerCase(),n=nutrition(text),condition=p.condition||"",flags=[];
+    const rules={diabetes:["sugar","glucose","sucrose","maltose","fructose"],hypertension:["sodium","salt"],kidney:["sodium","potassium","phosphorus"],celiac:["wheat","barley","rye","malt","gluten"],sugar:["sugar","glucose","sucrose","maltose","fructose"]};
+    Object.entries(rules).forEach(([risk,terms])=>terms.forEach(term=>{if(t.includes(term))flags.push({ingredient:term,risk});}));
+    const f={sugar:/sugar|glucose|sucrose|maltose|fructose/.test(t),sodium:/sodium|salt/.test(t),gluten:/wheat|barley|rye|malt|gluten/.test(t),potassium:/potassium/.test(t),phosphorus:/phosphorus/.test(t),processed:/flavour|flavor|preservative|emulsifier|colour|color|sweetener/.test(t)};
+    let score=10+(f.sugar?20:0)+(f.sodium?15:0)+(f.gluten?10:0)+(f.processed?10:0);
+    if(condition==="diabetes"&&f.sugar)score+=25;if(condition==="hypertension"&&f.sodium)score+=25;if(condition==="celiac"&&f.gluten)score+=35;if(condition==="kidney"&&(f.sodium||f.potassium||f.phosphorus))score+=25;
+    if(p.sugar_limit==="yes"&&(f.sugar||(n.sugars!=null&&n.sugars>10)))score+=20;if(p.low_sodium==="yes"&&(f.sodium||(n.sodium!=null&&n.sodium>400)))score+=20;
+    const allergy=String(p.allergy||"").split(",").map(x=>x.trim().toLowerCase()).filter(Boolean);if(allergy.some(x=>t.includes(x)))score+=35;score=Math.min(100,score);
+    return{riskScore:score,decision:score>=70?"Avoid for now":score>=40?"Use caution":"No specific concern detected",flags,allFlags:flags,nutrition:n,allergens:allergens(text),additives:additives(text),summary:score>=70?"Several label signals deserve extra caution.":score>=40?"Some label signals are worth checking before eating.":"No strong warning signal was detected by this prototype.",personalReason:allergy.some(x=>t.includes(x))?"A possible allergy keyword match was found.":"No selected health preference created an additional warning.",disclaimer:"Screening support only. This does not diagnose disease or replace advice from a qualified clinician."};
   }
-  if (healthForm) healthForm.querySelectorAll("input,select").forEach(el => el.addEventListener("change", getHealthProfile));
-
-  btn.addEventListener("click", async () => {
-    const file = input.files?.[0];
-    if (!file) return;
-    btn.disabled = true;
-    result.classList.add("hidden");
-    status.textContent = "Reading the food label…";
-    try {
-      if (!window.Tesseract) throw new Error("OCR library could not load. Refresh and try again.");
-      const ocr = await Tesseract.recognize(file, "eng", { logger: m => {
-        if (m.status === "recognizing text" && typeof m.progress === "number") status.textContent = "Reading label… " + Math.round(m.progress * 100) + "%";
-      }});
-      const text = (ocr.data.text || "").trim();
-      const confidence = Math.round(Number(ocr.data.confidence || 0));
-      const profile = getHealthProfile();
-      const analysis = analyzeFood(text, profile.condition || "", profile);
-      lastReport = { product: extractProduct(text), ocr: text, confidence, imageCount: 1, imageNames: [file.name], disease: profile.condition || "None", healthProfile: profile, analysis, createdAt: new Date().toISOString() };
-      localStorage.setItem("legalLensScan", JSON.stringify(lastReport));
-      render(lastReport, file);
-      status.textContent = "Done — your product report is ready."; 
-    } catch (e) {
-      console.error(e);
-      status.textContent = "Scan failed: " + e.message;
-    } finally { btn.disabled = false; }
-  });
-
-  function analyzeFood(text, condition, profile) {
-    const t = text.toLowerCase();
-    const nutrition = extractNutrition(text);
-    const rules = { diabetes:["sugar","glucose","sucrose","maltose","fructose"], hypertension:["sodium","salt"], kidney:["sodium","potassium","phosphorus"], celiac:["wheat","barley","rye","malt","gluten"], sugar:["sugar","glucose","sucrose","maltose","fructose"] };
-    const flags = [];
-    Object.entries(rules).forEach(([risk, terms]) => terms.forEach(term => { if (t.includes(term)) flags.push({ingredient:term,risk}); }));
-    const features = { sugar:/sugar|glucose|sucrose|maltose|fructose/.test(t), sodium:/sodium|salt/.test(t), gluten:/wheat|barley|rye|malt|gluten/.test(t), potassium:/potassium/.test(t), phosphorus:/phosphorus/.test(t), ultra_processed:/flavour|flavor|preservative|emulsifier|colour|color|sweetener/.test(t) };
-    let score = 10;
-    if (features.sugar) score += 20;
-    if (features.sodium) score += 15;
-    if (features.gluten) score += 10;
-    if (features.ultra_processed) score += 10;
-    if (condition === "diabetes" && features.sugar) score += 25;
-    if (condition === "hypertension" && features.sodium) score += 25;
-    if (condition === "celiac" && features.gluten) score += 35;
-    if (condition === "kidney" && (features.sodium || features.potassium || features.phosphorus)) score += 25;
-    if ((profile.sugar_limit === "yes") && (features.sugar || (nutrition.sugars != null && nutrition.sugars > 10))) score += 20;
-    if ((profile.low_sodium === "yes") && (features.sodium || (nutrition.sodium != null && nutrition.sodium > 400))) score += 20;
-    const allergy = String(profile.allergy || "").split(",").map(x => x.trim().toLowerCase()).filter(Boolean);
-    if (allergy.some(x => t.includes(x))) score += 35;
-    score = Math.min(100, score);
-    const decision = score >= 70 ? "Avoid for now" : score >= 40 ? "Use caution" : "No specific concern detected";
-    return { riskScore:score, decision, flags, allFlags:flags, features, nutrition, allergens:extractAllergens(text), additives:extractAdditives(text), summary:score >= 70 ? "Several label signals deserve extra caution." : score >= 40 ? "Some label signals are worth checking before eating." : "No strong warning signal was detected by this prototype.", personalReason: allergy.some(x => t.includes(x)) ? "A possible allergy keyword match was found." : "No selected health preference created an additional warning.", disclaimer:"Screening support only. This does not diagnose disease or replace advice from a qualified clinician." };
-  }
-
-  function extractProduct(text) {
-    const lines = text.split(/\n+/).map(x => x.trim()).filter(Boolean);
-    return lines.find(x => x.length >= 3 && x.length <= 90 && !/^(ingredients|nutrition|energy|calories|net quantity|mrp|fssai|batch|best before|expiry)/i.test(x)) || "Scanned food package";
-  }
-  function extractNutrition(text) {
-    const get = p => { const m = text.match(p); return m ? Number(m[1]) : null; };
-    return { energy:get(/energy[^\d]*(\d+(?:\.\d+)?)\s*kcal/i), calories:get(/calories?[^\d]*(\d+(?:\.\d+)?)/i), fat:get(/total\s*fat[^\d]*(\d+(?:\.\d+)?)\s*g/i), saturatedFat:get(/saturated\s*fat[^\d]*(\d+(?:\.\d+)?)\s*g/i), carbs:get(/carbohydrate[^\d]*(\d+(?:\.\d+)?)\s*g/i), sugars:get(/sugars?[^\d]*(\d+(?:\.\d+)?)\s*g/i), protein:get(/protein[^\d]*(\d+(?:\.\d+)?)\s*g/i), sodium:get(/sodium[^\d]*(\d+(?:\.\d+)?)\s*mg/i), salt:get(/salt[^\d]*(\d+(?:\.\d+)?)\s*g/i), fiber:get(/(?:dietary\s*)?fiber[^\d]*(\d+(?:\.\d+)?)\s*g/i), transFat:get(/trans\s*fat[^\d]*(\d+(?:\.\d+)?)\s*g/i), cholesterol:get(/cholesterol[^\d]*(\d+(?:\.\d+)?)\s*mg/i), potassium:get(/potassium[^\d]*(\d+(?:\.\d+)?)\s*mg/i), phosphorus:get(/phosphorus[^\d]*(\d+(?:\.\d+)?)\s*mg/i), calcium:get(/calcium[^\d]*(\d+(?:\.\d+)?)\s*mg/i), iron:get(/iron[^\d]*(\d+(?:\.\d+)?)\s*mg/i) };
-  }
-  function extractAllergens(text) { return ["milk","wheat","soy","peanut","nuts","almond","sesame","egg","fish","shellfish","gluten"].filter(x => new RegExp("\\b" + x + "\\b","i").test(text)); }
-  function extractAdditives(text) { return ["preservative","emulsifier","stabilizer","artificial flavour","artificial flavor","colour","color","sweetener"].filter(x => text.toLowerCase().includes(x)); }
-  function render(report, file) {
-    const a=report.analysis, n=a.nutrition;
-    result.classList.remove("hidden");
-    result.innerHTML = `<div class="product-card"><div class="product-image" id="overviewImages"></div><div><p class="muted">PRODUCT DETECTED</p><h2 class="product-name"></h2><p class="product-brand">OCR confidence: ${report.confidence}%</p></div></div><h2 class="section-title">Product report</h2><div class="resultGrid"><div class="metric"><span>LegalLens score</span><b>${a.riskScore}/100</b></div><div class="metric"><span>Screening</span><b>${escapeHtml(a.decision)}</b></div><div class="metric"><span>Condition</span><b>${escapeHtml(report.disease)}</b></div><div class="metric"><span>OCR confidence</span><b>${report.confidence}%</b></div></div><div class="${a.riskScore>=70?"danger":a.riskScore>=40?"warning":"good"}"><h3>In simple words</h3><p>${escapeHtml(a.summary)}</p><p>${escapeHtml(a.personalReason)}</p></div><h2 class="section-title">Nutrition detected</h2><div class="resultGrid">${nutritionMetric("Energy",n.energy,"kcal")}${nutritionMetric("Calories",n.calories,"kcal")}${nutritionMetric("Fat",n.fat,"g")}${nutritionMetric("Saturated fat",n.saturatedFat,"g")}${nutritionMetric("Carbohydrates",n.carbs,"g")}${nutritionMetric("Sugars",n.sugars,"g")}${nutritionMetric("Protein",n.protein,"g")}${nutritionMetric("Sodium",n.sodium,"mg")}${nutritionMetric("Salt",n.salt,"g")}${nutritionMetric("Fiber",n.fiber,"g")}${nutritionMetric("Trans fat",n.transFat,"g")}${nutritionMetric("Cholesterol",n.cholesterol,"mg")}${nutritionMetric("Potassium",n.potassium,"mg")}${nutritionMetric("Phosphorus",n.phosphorus,"mg")}${nutritionMetric("Calcium",n.calcium,"mg")}${nutritionMetric("Iron",n.iron,"mg")}</div><h2 class="section-title">Ingredients & warnings</h2><div class="chips">${a.allFlags.map(x=>`<span class="chip">${escapeHtml(x.ingredient)}</span>`).join("")||"<span class=muted>No warning keywords detected.</span>"}</div><h2 class="section-title">Allergens</h2><div class="chips">${a.allergens.map(x=>`<span class="chip">${escapeHtml(x)}</span>`).join("")||"<span class=muted>None detected.</span>"}</div><h2 class="section-title">Additives</h2><div class="chips">${a.additives.map(x=>`<span class="chip">${escapeHtml(x)}</span>`).join("")||"<span class=muted>None detected.</span>"}</div><details class="ocr-details"><summary>Show extracted label text</summary><pre></pre></details><div class="action-row"><button class="report" id="pdf">Download PDF report</button><button class="report secondary-report" id="csv">Download CSV</button></div><p class="disclaimer">${escapeHtml(a.disclaimer)}</p>`;
-    result.querySelector(".product-name").textContent=report.product;
-    const img=result.querySelector("#overviewImages"); if(img){ const el=document.createElement("img"); el.src=URL.createObjectURL(file); el.alt="Scanned food package"; img.appendChild(el); }
-    result.querySelector("pre").textContent=report.ocr || "No readable text detected.";
-    result.querySelector("#pdf").onclick=()=>downloadPDF(report);
-    result.querySelector("#csv").onclick=()=>downloadCSV(report);
-  }
-  function nutritionMetric(label,value,unit){ return `<div class="metric"><span>${label}</span><b>${value==null?"—":value+" "+unit}</b></div>`; }
-  function downloadCSV(r){ const a=r.analysis,n=a.nutrition; const rows=[["Field","Value"],["Product",r.product],["OCR confidence",r.confidence+"%"],["Condition",r.disease],["Score",a.riskScore+"/100"],["Decision",a.decision],...Object.entries(n).map(([k,v])=>[k,v??""]),["Allergens",a.allergens.join("; ")],["Additives",a.additives.join("; ")],["OCR text",r.ocr]]; const csv=rows.map(row=>row.map(v=>""" + String(v).replace(/"/g,"""") + """).join(",")).join("\n"); triggerDownload(URL.createObjectURL(new Blob([csv],{type:"text/csv"})),"LegalLens-Product-Report.csv"); }
-  function downloadPDF(r){ if(!window.jspdf?.jsPDF){alert("PDF library is still loading. Try again.");return;} const a=r.analysis,n=a.nutrition,doc=new jspdf.jsPDF(); let y=18; const lines=["LegalLens — Product Report","Product: "+r.product,"OCR confidence: "+r.confidence+"%","Condition: "+r.disease,"Score: "+a.riskScore+"/100","Screening: "+a.decision,"","Nutrition:"]; Object.entries(n).forEach(([k,v])=>lines.push(k+": "+(v==null?"—":v))); lines.push("","Allergens: "+(a.allergens.join(", ")||"None detected"),"Additives: "+(a.additives.join(", ")||"None detected"),"","Summary: "+a.summary,"","Extracted label text:",r.ocr||"No text detected.","",a.disclaimer); doc.setFontSize(16); doc.text("LegalLens — Product Report",15,y); y+=9; doc.setFontSize(10); doc.splitTextToSize(lines.slice(1).join("\n"),178).forEach(line=>{if(y>280){doc.addPage();y=18;}doc.text(line,15,y);y+=5;}); doc.save("LegalLens-Product-Report.pdf"); }
-  function triggerDownload(url,name){ const a=document.createElement("a"); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000); }
-  function escapeHtml(v){ return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'":"&#039;",""":"&quot;"}[c])); }
+  function product(t){const l=t.split(/\n+/).map(x=>x.trim()).filter(Boolean);return l.find(x=>x.length>=3&&x.length<=90&&!/^(ingredients|nutrition|energy|calories|net quantity|mrp|fssai|batch|best before|expiry)/i.test(x))||"Scanned food package";}
+  function nutrition(t){const g=p=>{const m=t.match(p);return m?Number(m[1]):null;};return{energy:g(/energy[^\d]*(\d+(?:\.\d+)?)\s*kcal/i),calories:g(/calories?[^\d]*(\d+(?:\.\d+)?)/i),fat:g(/total\s*fat[^\d]*(\d+(?:\.\d+)?)\s*g/i),saturatedFat:g(/saturated\s*fat[^\d]*(\d+(?:\.\d+)?)\s*g/i),carbs:g(/carbohydrate[^\d]*(\d+(?:\.\d+)?)\s*g/i),sugars:g(/sugars?[^\d]*(\d+(?:\.\d+)?)\s*g/i),protein:g(/protein[^\d]*(\d+(?:\.\d+)?)\s*g/i),sodium:g(/sodium[^\d]*(\d+(?:\.\d+)?)\s*mg/i),salt:g(/salt[^\d]*(\d+(?:\.\d+)?)\s*g/i),fiber:g(/(?:dietary\s*)?fiber[^\d]*(\d+(?:\.\d+)?)\s*g/i),transFat:g(/trans\s*fat[^\d]*(\d+(?:\.\d+)?)\s*g/i),cholesterol:g(/cholesterol[^\d]*(\d+(?:\.\d+)?)\s*mg/i),potassium:g(/potassium[^\d]*(\d+(?:\.\d+)?)\s*mg/i),phosphorus:g(/phosphorus[^\d]*(\d+(?:\.\d+)?)\s*mg/i),calcium:g(/calcium[^\d]*(\d+(?:\.\d+)?)\s*mg/i),iron:g(/iron[^\d]*(\d+(?:\.\d+)?)\s*mg/i)};}
+  function allergens(t){return["milk","wheat","soy","peanut","nuts","almond","sesame","egg","fish","shellfish","gluten"].filter(x=>new RegExp("\\b"+x+"\\b","i").test(t));}
+  function additives(t){return["preservative","emulsifier","stabilizer","artificial flavour","artificial flavor","colour","color","sweetener"].filter(x=>t.toLowerCase().includes(x));}
+  function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",""":"&quot;","'":"&#039;"}[c]));}
+  function metric(k,v,u){return '<div class="metric"><span>'+k+'</span><b>'+(v==null?"—":v+" "+u)+'</b></div>';}
+  function render(r,file){const a=r.analysis,n=a.nutrition;result.classList.remove("hidden");result.innerHTML='<div class="product-card"><div class="product-image" id="overviewImages"></div><div><p class="muted">PRODUCT DETECTED</p><h2 class="product-name"></h2><p class="product-brand">OCR confidence: '+r.confidence+'%</p></div></div><h2 class="section-title">Complete Product Report</h2><div class="resultGrid"><div class="metric"><span>LegalLens score</span><b>'+a.riskScore+'/100</b></div><div class="metric"><span>Screening</span><b>'+esc(a.decision)+'</b></div><div class="metric"><span>Condition</span><b>'+esc(r.disease)+'</b></div><div class="metric"><span>OCR confidence</span><b>'+r.confidence+'%</b></div></div><div class="'+(a.riskScore>=70?"danger":a.riskScore>=40?"warning":"good")+'"><h3>In simple words</h3><p>'+esc(a.summary)+'</p><p>'+esc(a.personalReason)+'</p></div><h2 class="section-title">Nutrition detected</h2><div class="resultGrid">'+metric("Energy",n.energy,"kcal")+metric("Calories",n.calories,"kcal")+metric("Fat",n.fat,"g")+metric("Saturated fat",n.saturatedFat,"g")+metric("Carbohydrates",n.carbs,"g")+metric("Sugars",n.sugars,"g")+metric("Protein",n.protein,"g")+metric("Sodium",n.sodium,"mg")+metric("Salt",n.salt,"g")+metric("Fiber",n.fiber,"g")+metric("Trans fat",n.transFat,"g")+metric("Cholesterol",n.cholesterol,"mg")+metric("Potassium",n.potassium,"mg")+metric("Phosphorus",n.phosphorus,"mg")+metric("Calcium",n.calcium,"mg")+metric("Iron",n.iron,"mg")+'</div><h2 class="section-title">Ingredients & warnings</h2><div class="chips">'+(a.allFlags.map(x=>'<span class="chip">'+esc(x.ingredient)+'</span>').join("")||'<span class="muted">None detected.</span>')+'</div><h2 class="section-title">Allergens</h2><div class="chips">'+(a.allergens.map(x=>'<span class="chip">'+esc(x)+'</span>').join("")||'<span class="muted">None detected.</span>')+'</div><h2 class="section-title">Additives</h2><div class="chips">'+(a.additives.map(x=>'<span class="chip">'+esc(x)+'</span>').join("")||'<span class="muted">None detected.</span>')+'</div><details class="ocr-details"><summary>Show extracted label text</summary><pre></pre></details><div class="action-row"><button class="report" id="pdf">Download complete PDF report</button><button class="report secondary-report" id="csv">Download CSV</button></div><p class="disclaimer">'+esc(a.disclaimer)+'</p>';result.querySelector(".product-name").textContent=r.product;const im=result.querySelector("#overviewImages"),img=document.createElement("img");img.src=URL.createObjectURL(file);img.alt="Scanned food package";im.appendChild(img);result.querySelector("pre").textContent=r.ocr||"No readable text detected.";result.querySelector("#pdf").onclick=()=>pdf(r);result.querySelector("#csv").onclick=()=>csv(r);}
+  function csv(r){const a=r.analysis,rows=[["Field","Value"],["Product",r.product],["OCR confidence",r.confidence+"%"],["Condition",r.disease],["Score",a.riskScore+"/100"],["Decision",a.decision],...Object.entries(a.nutrition).map(([k,v])=>[k,v??""]),["Allergens",a.allergens.join("; ")],["Additives",a.additives.join("; ")],["OCR text",r.ocr]];const s=rows.map(x=>x.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\n");dl(URL.createObjectURL(new Blob([s],{type:"text/csv"})),"LegalLens-Product-Report.csv");}
+  function pdf(r){if(!window.jspdf?.jsPDF){alert("PDF library is still loading. Try again.");return;}const a=r.analysis,doc=new jspdf.jsPDF();let y=18;doc.setFontSize(17);doc.text("LegalLens — Complete Product Report",15,y);y+=9;doc.setFontSize(10);const lines=["Product: "+r.product,"OCR confidence: "+r.confidence+"%","Condition: "+r.disease,"LegalLens score: "+a.riskScore+"/100","Screening: "+a.decision,"","NUTRITION"];Object.entries(a.nutrition).forEach(([k,v])=>lines.push(k+": "+(v==null?"—":v)));lines.push("","Allergens: "+(a.allergens.join(", ")||"None detected"),"Additives: "+(a.additives.join(", ")||"None detected"),"","Summary: "+a.summary,"","EXTRACTED LABEL TEXT",r.ocr||"No text detected.","",""+a.disclaimer);doc.splitTextToSize(lines.join("\n"),178).forEach(line=>{if(y>280){doc.addPage();y=18;}doc.text(line,15,y);y+=5;});doc.save("LegalLens-Complete-Product-Report.pdf");}
+  function dl(url,name){const a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 })();
